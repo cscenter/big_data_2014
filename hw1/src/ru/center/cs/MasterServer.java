@@ -23,12 +23,12 @@ public class MasterServer {
     private String activeReplica;
 
     public MasterServer(int port) {
-        replicas = new ArrayList<>(ConstantsUtil.DEFAULT_REPLICA_NUMBER);
+        replicas = new ArrayList<>(Constants.DEFAULT_REPLICA_NUMBER);
         activeReplica = null;
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
-            server.createContext(ConstantsUtil.MASTER_WRITE_PATH, new WriteReplicaHandler());
-            server.createContext(ConstantsUtil.MASTER_MANAGE_PATH, new ManageReplicaHandler());
+            server.createContext(Constants.MASTER_WRITE_PATH, new WriteReplicaHandler());
+            server.createContext(Constants.MASTER_MANAGE_PATH, new ManageReplicaHandler());
         } catch (IOException e) {
             System.out.println("Failed start master server: " + e.getMessage() + "\n Aborted.");
             server = null;
@@ -45,9 +45,9 @@ public class MasterServer {
     }
 
     private void chooseActiveReplica() {
-        sendReplicaMessage(activeReplica, ConstantsUtil.HEADER_REPLICA_ACTION_SET_INACTIVE);
+        sendReplicaMessage(activeReplica, Constants.HEADER_REPLICA_ACTION_SET_INACTIVE);
         activeReplica = replicas.get((int) (replicas.size() * Math.random()));
-        sendReplicaMessage(activeReplica, ConstantsUtil.HEADER_REPLICA_ACTION_SET_ACTIVE);
+        sendReplicaMessage(activeReplica, Constants.HEADER_REPLICA_ACTION_SET_ACTIVE);
         System.out.println("Successfully updated active replica: " + activeReplica);
     }
 
@@ -55,11 +55,11 @@ public class MasterServer {
         if (replica == null) {
             return;
         }
-        final String urlString = replica + ConstantsUtil.REPLICA_MANAGE_PATH;
+        final String urlString = replica + Constants.REPLICA_MANAGE_PATH;
         try {
             final URL url = new URL(urlString);
             final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.addRequestProperty(ConstantsUtil.HEADER_ACTION_TITLE, action);
+            connection.addRequestProperty(Constants.HEADER_ACTION_TITLE, action);
             connection.connect();
             connection.getResponseCode();
         } catch (IOException e) {
@@ -81,27 +81,27 @@ public class MasterServer {
         @Override
         public void handle(final HttpExchange exchange) throws IOException {
             final Headers requestHeaders = exchange.getRequestHeaders();
-            if (!requestHeaders.containsKey(ConstantsUtil.HEADER_ACTION_TITLE)) {
+            if (!requestHeaders.containsKey(Constants.HEADER_ACTION_TITLE)) {
                 return;
             }
-            final String action = requestHeaders.getFirst(ConstantsUtil.HEADER_ACTION_TITLE);
-            final String replicaAddress = requestHeaders.getFirst(ConstantsUtil.HEADER_REPLICA_ADDRESS);
+            final String action = requestHeaders.getFirst(Constants.HEADER_ACTION_TITLE);
+            final String replicaAddress = requestHeaders.getFirst(Constants.HEADER_REPLICA_ADDRESS);
             switch (action) {
-                case ConstantsUtil.HEADER_REPLICA_ACTION_REGISTER:
+                case Constants.HEADER_REPLICA_ACTION_REGISTER:
                     replicas.add(replicaAddress);
                     if (activeReplica == null) {
                         chooseActiveReplica();
                     }
                     System.out.println("Successfully added replica: " + replicaAddress);
                     break;
-                case ConstantsUtil.HEADER_REPLICA_ACTION_UNREGISTER:
+                case Constants.HEADER_REPLICA_ACTION_UNREGISTER:
                     replicas.remove(replicaAddress);
                     if (replicaAddress.equals(activeReplica)) {
                         chooseActiveReplica();
                     }
                     System.out.println("Successfully removed replica: " + replicaAddress);
                     break;
-                case ConstantsUtil.HEADER_REPLICA_ACTION_DEPRECATED:
+                case Constants.HEADER_REPLICA_ACTION_DEPRECATED:
                     if (replicaAddress.equals(activeReplica)) {
                         System.out.println("Replica became deprecated, choosing new active replica...");
                         chooseActiveReplica();
@@ -114,7 +114,7 @@ public class MasterServer {
 
     public static void main(String[] args) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
-        final int port = args.length == 1 ? Integer.valueOf(args[0]) : ConstantsUtil.MASTER_PORT;
+        final int port = args.length == 1 ? Integer.valueOf(args[0]) : Constants.MASTER_DEFAULT_PORT;
         new MasterServer(port).start();
     }
 }

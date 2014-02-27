@@ -30,8 +30,8 @@ public class FileServer {
         deprecationTimer = new Timer();
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
-            server.createContext(ConstantsUtil.REPLICA_WRITE_PATH, new WriteReplicaHandler());
-            server.createContext(ConstantsUtil.REPLICA_MANAGE_PATH, new ManageReplicaHandler());
+            server.createContext(Constants.REPLICA_WRITE_PATH, new WriteReplicaHandler());
+            server.createContext(Constants.REPLICA_MANAGE_PATH, new ManageReplicaHandler());
         } catch (IOException e) {
             System.out.println("Failed start file server: " + e.getMessage() + "\n Aborted.");
             server = null;
@@ -52,17 +52,17 @@ public class FileServer {
         }
         System.out.println("Starting replica...");
         server.start();
-        sendMasterMessage(ConstantsUtil.HEADER_REPLICA_ACTION_REGISTER);
+        sendMasterMessage(Constants.HEADER_REPLICA_ACTION_REGISTER);
     }
 
     private void sendMasterMessage(final String action) {
-        final String urlString = masterServer + ConstantsUtil.MASTER_MANAGE_PATH;
+        final String urlString = masterServer + Constants.MASTER_MANAGE_PATH;
         try {
             final URL url = new URL(urlString);
             final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.addRequestProperty(ConstantsUtil.HEADER_ACTION_TITLE, action);
-            connection.addRequestProperty(ConstantsUtil.HEADER_REPLICA_ADDRESS, "http://" + selfHost + ":" + selfPort);
-            connection.setConnectTimeout(ConstantsUtil.CONNECTION_TIMEOUT);
+            connection.addRequestProperty(Constants.HEADER_ACTION_TITLE, action);
+            connection.addRequestProperty(Constants.HEADER_REPLICA_ADDRESS, "http://" + selfHost + ":" + selfPort);
+            connection.setConnectTimeout(Constants.CONNECTION_TIMEOUT);
             connection.connect();
             connection.getResponseCode();
         } catch (IOException e) {
@@ -73,7 +73,7 @@ public class FileServer {
     private class WriteReplicaHandler implements HttpHandler {
         @Override
         public void handle(final HttpExchange request) throws IOException {
-            final String response = isActive ? ConstantsUtil.REPLICA_ACTIVE_RESPONSE : ConstantsUtil.REPLICA_INACTIVE_RESPONSE;
+            final String response = isActive ? Constants.REPLICA_ACTIVE_RESPONSE : Constants.REPLICA_INACTIVE_RESPONSE;
             request.sendResponseHeaders(200, response.length());
             OutputStream os = request.getResponseBody();
             os.write(response.getBytes());
@@ -85,29 +85,29 @@ public class FileServer {
         @Override
         public void handle(final HttpExchange exchange) throws IOException {
             final Headers requestHeaders = exchange.getRequestHeaders();
-            if (!requestHeaders.containsKey(ConstantsUtil.HEADER_ACTION_TITLE)) {
+            if (!requestHeaders.containsKey(Constants.HEADER_ACTION_TITLE)) {
                 return;
             }
-            final String action = requestHeaders.getFirst(ConstantsUtil.HEADER_ACTION_TITLE);
+            final String action = requestHeaders.getFirst(Constants.HEADER_ACTION_TITLE);
             switch (action) {
-                case ConstantsUtil.HEADER_REPLICA_ACTION_SET_ACTIVE:
+                case Constants.HEADER_REPLICA_ACTION_SET_ACTIVE:
                     isActive = true;
                     deprecationTimer.schedule(new TimerTask() {
                         @Override
                         public void run() {
                             isActive = false;
                             System.out.println("Replica is deprecated now.");
-                            sendMasterMessage(ConstantsUtil.HEADER_REPLICA_ACTION_DEPRECATED);
+                            sendMasterMessage(Constants.HEADER_REPLICA_ACTION_DEPRECATED);
                         }
-                    }, ConstantsUtil.REPLICA_DEPRECATION_TIME);
+                    }, Constants.REPLICA_DEPRECATION_TIME);
                     System.out.println("Replica is active now.");
                     break;
-                case ConstantsUtil.HEADER_REPLICA_ACTION_SET_INACTIVE:
+                case Constants.HEADER_REPLICA_ACTION_SET_INACTIVE:
                     isActive = false;
                     System.out.println("Replica is inactive now.");
                     break;
-                case ConstantsUtil.HEADER_REPLICA_ACTION_SHUTDOWN:
-                    sendMasterMessage(ConstantsUtil.HEADER_REPLICA_ACTION_UNREGISTER);
+                case Constants.HEADER_REPLICA_ACTION_SHUTDOWN:
+                    sendMasterMessage(Constants.HEADER_REPLICA_ACTION_UNREGISTER);
                     System.exit(0);
                     break;
             }
