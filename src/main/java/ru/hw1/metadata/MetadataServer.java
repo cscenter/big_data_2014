@@ -14,7 +14,7 @@ import ru.hw1.metadata.servlet.PingServlet;
 public class MetadataServer {
     private static Logger log = Logger.getLogger(MetadataServer.class);
 
-    public static final long MAX_UNPINGED_TIME = 10 * 1000;
+    public static final long MAX_UNPINGED_TIME = 20 * 1000;
 
     public static void main(String[] args) throws Exception {
         int masterPort;

@@ -26,9 +26,7 @@ public class Pinger implements Runnable {
     public void run() {
         //noinspection InfiniteLoopStatement
         while(true){
-            if(ping()){
-                replica.pinged();
-            }
+            ping();
             try {
                 Thread.sleep(MetadataServer.MAX_UNPINGED_TIME / 3);
             } catch (InterruptedException e) {
@@ -37,7 +35,7 @@ public class Pinger implements Runnable {
         }
     }
 
-    private boolean ping() {
+    private void ping() {
         URI uri;
         try {
             uri = new URIBuilder(replica.getMetadataServer())
@@ -52,8 +50,13 @@ public class Pinger implements Runnable {
             responseBody = Request.Get(uri).execute().returnContent().asString();
         } catch (IOException e) {
             log.warn("Can't connect to master");
-            return false;
+            return ;
         }
-        return "OK".equals(responseBody);
+        if("YouAreMain".equals(responseBody)){
+            replica.setIsMainReplica(true);
+            replica.pinged();
+        } else {
+            replica.setIsMainReplica(false);
+        }
     }
 }

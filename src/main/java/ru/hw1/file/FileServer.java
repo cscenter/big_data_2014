@@ -23,7 +23,7 @@ public class FileServer {
         int masterPort;
         if(args.length != 2){
             log.warn("No explicit ports were provided. ");
-            replicaPort = 8001;
+            replicaPort = 8002;
             masterPort = 8000;
         } else {
             replicaPort = Integer.valueOf(args[0]);

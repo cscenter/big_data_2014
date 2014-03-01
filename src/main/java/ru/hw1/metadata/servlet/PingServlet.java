@@ -11,9 +11,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
-* Evgeny Vanslov
-* vans239@gmail.com
-*/
+ * Evgeny Vanslov
+ * vans239@gmail.com
+ */
 public class PingServlet extends HttpServlet {
     private Logger log = Logger.getLogger(PingServlet.class);
 
@@ -31,6 +31,10 @@ public class PingServlet extends HttpServlet {
         metadata.pinged(serverAddress);
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
-        writer.print("OK");
+        if (metadata.getMainServerAddress().equals(serverAddress)) {
+            writer.print("YouAreMain");
+        } else {
+            writer.print("OK");
+        }
     }
 }

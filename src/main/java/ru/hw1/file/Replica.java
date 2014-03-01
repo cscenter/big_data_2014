@@ -44,13 +44,14 @@ public class Replica {
     }
 
     public synchronized void pinged() {
-        updateMainReplica();
         log.debug("Ping by " + getReplicaServer());
         lastPingTime = new Date().getTime();
     }
 
-    public synchronized void mainReplica() {
-        log.debug("I am main replica");
-        isMainReplica = true;
+    public synchronized void setIsMainReplica(boolean isMain) {
+        if(isMain != isMainReplica){
+            log.debug("My status " + (isMain ? "Main" : "Not main"));
+        }
+        isMainReplica = isMain;
     }
 }

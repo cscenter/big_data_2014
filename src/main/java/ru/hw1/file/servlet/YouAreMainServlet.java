@@ -24,7 +24,7 @@ public class YouAreMainServlet extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-        replica.mainReplica();
+        replica.setIsMainReplica(true);
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
         writer.print("OK");
