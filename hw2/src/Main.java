@@ -17,7 +17,8 @@ public class Main {
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
             statement.executeUpdate("");
-            ResultSet rs = statement.executeQuery("SELECT * FROM word_list");
+            final String select = ""; // TODO update
+            ResultSet rs = statement.executeQuery(select);
             while (rs.next()) {
                 // read the result set
                 System.out.println("name = " + rs.getString("name"));
