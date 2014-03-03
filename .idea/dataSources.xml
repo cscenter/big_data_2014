@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="1473620587">
+    <data-source source="LOCAL" name="corpus" uuid="bd82acdc-ba24-4c07-a680-76de661d6ecc">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/hw2/corpus.db</jdbc-url>
+      <libraries />
+    </data-source>
+  </component>
+</project>
+
