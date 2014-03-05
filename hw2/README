@@ -1,0 +1,8 @@
+Elizaveta Shashkova, CSC, 2014
+Searcher (vector model)
+
+Start searching:
+./start_search <db_path> <query>
+
+Example:
+./start_search ./corpus.db "Quality of service service service"
