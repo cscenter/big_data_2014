@@ -1,0 +1,8 @@
+#!/usr/bin/env python 
+
+import searcher
+import sys
+s = searcher.Searcher(sys.argv[1])
+s.cos_search(sys.argv[2])
+
+
