@@ -12,15 +12,14 @@ def mapfn(k, v):
     f = codecs.open(os.path.join(k, v), "r", "utf-8")
     meta, sep, values_str = f.read().partition(' ')
     matrix_type, sep, row = meta.partition('-')
-    values = values_str.split(' ')
-    if matrix_type == "l":
-        for column, value in enumerate(values):
-            for k in range(1, 3):
-                yield (str((int(row), k)), (matrix_type, column + 1, int(value)))
-    else:
-        for column, value in enumerate(values):
-            for k in range(1, 3):
-                yield (str((k, (column + 1))), (matrix_type, int(row), int(value)))
+    row = int(row)
+    values = map(lambda val: int(val), values_str.split(' '))
+    for column, value in enumerate(values):
+        for k in range(1, 3):
+            if matrix_type == "l":
+                yield (str((row, k)), (matrix_type, column + 1, value))
+            else:
+                yield (str((k, column + 1)), (matrix_type, row, value))
 
 
 def reducefn(k, vs):
@@ -29,7 +28,6 @@ def reducefn(k, vs):
     keys = set(left) & set(right)
     result = sum([left[i] * right[i] for i in keys])
     return result
-
 
 
 s = mincemeat.Server()
