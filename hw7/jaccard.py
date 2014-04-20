@@ -4,11 +4,17 @@ import mincemeat
 import sys
 import shingling
 from os import listdir
+import argparse
 
-shingling.n = 2
+dir = 'data'
 
 def mapfn(file_name, text):
     words = shingling.produce(text)
+    for word in words:
+        yield word, file_name
+
+def mapfn_short(file_name, text):
+    words = shingling.produce_short(text)
     for word in words:
         yield word, file_name
 
@@ -35,9 +41,21 @@ def reducefn2(file, vs):
             list[v] = 1
     return list
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-s', action='store_true')
+parser.add_argument('dir', nargs='?', type=str, default='data')
+args = parser.parse_args()
+
+dir = args.dir
+
 s = mincemeat.Server()
-s.map_input = mincemeat.FileMapInput('data')
-s.mapfn = mapfn
+s.map_input = mincemeat.FileMapInput(dir)
+
+if (args.s):
+    s.mapfn = mapfn_short
+else:
+    s.mapfn = mapfn
+
 s.reducefn = reducefn
 results = s.run_server(password="changeme")
 print "Results after MapReduce 1:"
@@ -56,8 +74,8 @@ for file in results.keys():
 
 for file in results.keys():
     other_files = results[file]
-    for file2 in listdir('data'):
-        file2 = 'data/' + file2
+    for file2 in listdir(dir):
+        file2 = dir + '/' + file2
         if file <= file2:
             print "Files (%s, %s)" % (file, file2)
             if file2 in other_files.keys():
