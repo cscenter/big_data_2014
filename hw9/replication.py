@@ -52,16 +52,29 @@ class Handler_leader(BaseHTTPRequestHandler):
                     urllib2.urlopen("http://%s:%s/show_log" % (follower_host, follower))
 
         if (self.path.startswith("/prev")):
-            ok_follower = self.path[len("/prev") + 1:]
-            i = followers_indexes[ok_follower]
+            follower = self.path[len("/prev") + 1:]
+            i = followers_indexes[follower]
             i -= 1
-            followers_indexes[ok_follower] = i
+            followers_indexes[follower] = i
             if i > 0:
                 urllib2.urlopen("http://%s:%s/send_log/%s" %
-                    (follower_host, ok_follower, records[i] + '+' + records[i - 1] + '+' + str(term)))
+                    (follower_host, follower, records[i] + '+' + records[i - 1] + '+' + str(term)))
             else:
                 urllib2.urlopen("http://%s:%s/full_log/%s" % (follower_host, follower, log + '+' + str(term)))
 
+        if (self.path.startswith("/suff")):
+            info = self.path[len("/suff") + 1:]
+            info = info.split('+')
+            follower = info[0]
+            rec = info[1]
+            log_records = log.split(',')
+            ind = log_records.index(rec)
+            log_suffix = ''
+            for rec_s in range(ind + 1, len(log_records)):
+                log_suffix += ','
+                log_suffix += log_records[rec_s]
+
+            urllib2.urlopen("http://%s:%s/suff/%s" % (follower_host, follower, log_suffix + '+' + str(term)))
 
 
 class Handler_follower(BaseHTTPRequestHandler):
@@ -90,10 +103,7 @@ class Handler_follower(BaseHTTPRequestHandler):
             else:
                 follower_records = log.split(',')
                 if leader_prev in follower_records:
-                    log += ','
-                    log += leader_rec
-                    term = leader_term
-                    urllib2.urlopen("http://%s:%s/ok/%s" % (leader_host, port_leader, str(port)))
+                    urllib2.urlopen("http://%s:%s/suff/%s" % (leader_host, port_leader, str(port) + '+' + leader_prev))
                 else:
                     urllib2.urlopen("http://%s:%s/prev/%s" % (leader_host, port_leader, str(port)))
 
@@ -106,6 +116,15 @@ class Handler_follower(BaseHTTPRequestHandler):
         if (self.path.startswith("/show_log")):
             self.wfile.write("My log: %s\n" % log)
             print "My log: %s\n" % log
+
+        if (self.path.startswith("/suff")):
+            info = self.path[len("/suff") + 1:]
+            info = info.split('+')
+            suff = info[0]
+            term = int(info[1])
+            log += suff
+            urllib2.urlopen("http://%s:%s/ok/%s" % (leader_host, port_leader, str(port)))
+
 
 def start_server():
     global is_leader
